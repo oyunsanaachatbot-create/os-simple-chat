@@ -1,21 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import "./globals.css";
 
 export default function Page() {
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Сайн байна уу, юу ярилцмаар байна?" }
+    { role: "assistant", content: "Сайн байна уу? Юу ярилцмаар байна?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSend(e) {
     e.preventDefault();
-    const text = input.trim();
-    if (!text || loading) return;
+    if (!input.trim() || loading) return;
 
-    const newMessages = [...messages, { role: "user", content: text }];
+    const newMessages = [...messages, { role: "user", content: input }];
     setMessages(newMessages);
     setInput("");
     setLoading(true);
@@ -27,26 +25,23 @@ export default function Page() {
         body: JSON.stringify({ messages: newMessages })
       });
 
-      if (!res.ok) {
-        throw new Error("Request failed");
-      }
-
       const data = await res.json();
+
       setMessages([
         ...newMessages,
-        { role: "assistant", content: data.reply || "(хоосон хариу)" }
+        { role: "assistant", content: data.reply }
       ]);
     } catch (err) {
       setMessages([
         ...newMessages,
         {
           role: "assistant",
-          content: "Алдаа гарлаа. Дараа дахин оролдоно уу."
+          content: "Алдаа гарлаа. Дахин оролдоно уу."
         }
       ]);
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   }
 
   return (
@@ -55,10 +50,7 @@ export default function Page() {
 
       <div className="chat-messages">
         {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`message ${m.role === "user" ? "user" : "assistant"}`}
-          >
+          <div key={i} className={`message ${m.role}`}>
             {m.content}
           </div>
         ))}
@@ -67,8 +59,8 @@ export default function Page() {
       <form className="chat-input-row" onSubmit={handleSend}>
         <input
           className="chat-input"
-          placeholder="Асуух зүйлээ бич..."
           value={input}
+          placeholder="Асуух зүйлээ бичнэ үү..."
           onChange={(e) => setInput(e.target.value)}
         />
         <button className="chat-send-btn" disabled={loading}>
